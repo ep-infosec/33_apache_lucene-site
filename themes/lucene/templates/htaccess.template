@@ -1,0 +1,107 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+RewriteEngine on
+RewriteBase /
+
+<If "%{HTTPS} == 'on'">
+  Header always set Strict-Transport-Security "max-age=31536000"
+</If>
+<Else>
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</Else>
+
+### Pre-CMS site redirects
+
+# DOAP file redirects to source repository
+RedirectMatch Permanent ^/core/doap.rdf https://gitbox.apache.org/repos/asf?p=lucene.git;a=blob_plain;f=dev-tools/doap/lucene.rdf;hb=HEAD
+
+# page renames
+RedirectMatch Permanent ^/who.html /whoweare.html
+RedirectMatch Permanent ^/java/docs/irc.html /core/discussion.html#irc
+RedirectMatch Permanent ^/java/docs/mailinglists.html /core/discussion.html
+RedirectMatch Permanent ^/java/docs/systemrequirements.html /core/systemreqs.html
+RedirectMatch Permanent ^/java/docs/developer-resources.html /core/developer.html
+
+# Simple redirect to "directory", so later rules match
+RedirectMatch temp ^/core/api$ $0/
+RedirectMatch Permanent ^/core/\d+_\d+_\d+$ $0/
+
+# Other pages can always be redirected to the "most current" released javadocs
+# using "temp" instead of permanent so crawlers know that they
+# might change again in the future
+RedirectMatch temp ^/core/api/(.*) /core/{{ LUCENE_LATEST_RELEASE | replace(".", "_") }}/$1
+
+# we no longer have a TLP mail.html page use 'core' for now
+RedirectMatch Permanent ^/mail.html /core/discussion.html
+
+# this was a temporary solution:
+RedirectMatch Permanent ^/core/old_versioned_docs/versions/(.*) /core/$1
+
+# redirect older point versions to latest (to keep number of javadocs small):
+RedirectMatch Permanent ^/core/2_9_[0123](.*) /core/2_9_4$1
+RedirectMatch Permanent ^/core/3_0_[012](.*) /core/3_0_3$1
+RedirectMatch Permanent ^/core/4_0_0-(ALPHA|BETA)(.*) /core/4_0_0$2
+
+# Default catch for "java" - Core is the new Java!
+RedirectMatch Permanent ^/java/docs(.*) /core$1
+RedirectMatch Permanent ^/java($|/.*) /core$1
+
+# pylucene docs renamed
+RedirectMatch Permanent ^/pylucene/documentation/install.html /pylucene/install.html
+RedirectMatch Permanent ^/pylucene/documentation/readme.html /pylucene/features.html
+RedirectMatch Permanent ^/pylucene/resources/version_control.html /pylucene/mailing-lists.html
+
+# no page for this????
+RedirectMatch Permanent ^/pylucene/resources/version_control.html /pylucene/
+
+# when in doubt, assume they've moved up a dir
+RedirectMatch Permanent ^/pylucene/documentation/(.*) /pylucene/$1
+RedirectMatch Permanent ^/pylucene/jcc/documentation/(.*) /pylucene/jcc/$1
+
+### old subprojects
+
+# old nutch redirects
+Redirect Permanent ^/nutch/docs/en/bot.html https://lucene.apache.org/nutch/bot.html
+
+# hadoop graduated to TLP, site strcuture has changed, do don't use $1 in redirect...
+RedirectMatch Permanent ^/hadoop(.*)$ https://hadoop.apache.org/
+
+#mahout is TLP
+RedirectMatch Permanent ^/mahout(.*)$ https://mahout.apache.org/$1
+
+# promote Tika to TLP
+RedirectMatch Permanent ^/tika/(.*)$ https://tika.apache.org/$1
+
+# promote Nutch to TLP
+RedirectMatch Permanent ^/nutch/(.*)$ https://nutch.apache.org/$1
+
+# Lucy has moved, site strcuture has changed, do don't use $1 in redirect...
+RedirectMatch Permanent ^/lucy/(.*)$ https://lucy.apache.org/
+
+# Solr moved to TLP Feb 2021
+Redirect Permanent /feeds/solr https://solr.apache.org/feeds/solr
+Redirect permanent /solr https://solr.apache.org
+
+### Javadocs
+
+# TODO: Move the javadocs to a subfolder core/docs/ instead of directly below core/
+
+# Hack: Append slash, if folder name does not end with slash - everything containing a "." is treated as file and excluded from redirect:
+RewriteRule ^core/\d+(?!.+\.\w+$|.+/$).+$   $0/ [R=301,L]
+
+# __root/docs.lucene.apache.org/ is a special alias added by INFRA-19439, so we can refer to stuff in other places like SVN:
+RewriteRule ^core/\d+.*$         __root/docs.lucene.apache.org/$0 [PT]
+

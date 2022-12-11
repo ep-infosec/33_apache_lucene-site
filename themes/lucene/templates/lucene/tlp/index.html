@@ -1,0 +1,46 @@
+{% extends "lucene/tlp/page.html" %}
+
+{% block content %}
+{{ super() }}
+
+<p>
+  The Apache Lucene™ project develops open-source search
+  software. The project releases a core search library, named Lucene™ core,
+  as well as PyLucene, a python binding for Lucene.
+</p>
+
+<div id="col1">
+  <p><a href="/core/">Lucene Core</a> is a Java library providing powerful indexing and search features,
+  as well as spellchecking, hit highlighting and advanced analysis/tokenization capabilities. The <a href="/pylucene/">PyLucene</a>
+    sub project provides Python bindings for Lucene Core.
+  </p>
+</div>
+<div id="col2">
+  <h2 id="lucene-core-news">Latest Lucene Core News</h2>
+  <div>
+    {% for article in (articles | selectattr("category.name", "eq", "core/news")|list)[:3] %}
+    <p id="{{article.slug}}">
+      <a href="/core/corenews.html#{{article.slug}}">{{article.title}}</a> <span class="news-date">({{ article.date | strftime("%d.%b") }})</span>
+    </p>
+    {% endfor %}
+  </div>
+</div>
+<br clear="all"/>
+<hr/>
+<div>
+  <p>
+    <a href="https://solr.apache.org/">
+      <img src="/theme/images/solr/Solr_Logo_200x101.png{{ STATIC_RESOURCE_SUFFIX }}" width="100" alt="Solr Logo" align="left" class="solrlogo" />
+    </a>
+    <b>ANNOUNCEMENT:</b> The <a href="https://solr.apache.org/">Solr™</a>
+    sub project has moved to a separate Top Level Project (TLP). All things Solr can now be found at
+    <a href="https://solr.apache.org/">https://solr.apache.org/</a>. Mailing lists and git repositories have changed,
+    please see details on the Solr website.
+  </p>
+</div>
+<br clear="all"/>
+<hr/>
+<br clear="all"/>
+
+{% include "lucene/_asf.html" %}
+{% endblock content %}
